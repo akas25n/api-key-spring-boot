@@ -1,5 +1,6 @@
 package com.apikey.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -23,6 +24,9 @@ public class APISecurityConfig extends WebSecurityConfigurerAdapter {
     @Value("${app.http.auth-token}")
     private String principalRequestValue;
 
+    @Autowired
+    private ApiAuthenticationEntryPoint authEntryPoint;
+
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         APIKeyAuthFilter filter = new APIKeyAuthFilter(principalRequestHeader);
@@ -42,8 +46,8 @@ public class APISecurityConfig extends WebSecurityConfigurerAdapter {
         httpSecurity.
                 antMatcher("/check").
                 csrf().disable().
-                sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).
-                and().addFilter(filter).authorizeRequests().anyRequest().authenticated();
+                sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and().exceptionHandling().authenticationEntryPoint(authEntryPoint)
+                .and().addFilter(filter).authorizeRequests().anyRequest().authenticated();
     }
-
 }
